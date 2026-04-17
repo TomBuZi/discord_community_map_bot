@@ -55,7 +55,7 @@
           return;
         }
 
-        const cluster = L.markerClusterGroup();
+        const cluster = L.markerClusterGroup({ maxClusterRadius: 40 });
 
         users.forEach(user => {
           const popup = `
