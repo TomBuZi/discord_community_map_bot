@@ -13,7 +13,6 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 MAP_URL = os.getenv("MAP_URL")
-
 gh = Github(GITHUB_TOKEN)
 repo = gh.get_repo(GITHUB_REPO)
 

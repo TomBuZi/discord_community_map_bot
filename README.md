@@ -77,32 +77,61 @@ Der Bot braucht diesen Token, um die Kartendaten in deinem Repo zu speichern.
 1. Geh auf [discloud.com](https://discloud.com) → **Login with Discord**.
 2. Autorisiere Discloud für deinen Discord-Account.
 
-#### 5b — Projekt als ZIP hochladen
+#### 5b — ZIP-Datei vorbereiten
 
-1. Packe **alle Dateien dieses Projekts** (inkl. `discloud.config`, `bot/`, `data/`) in eine ZIP-Datei.
-   - Wichtig: Die `discloud.config` muss direkt im **Wurzelverzeichnis** der ZIP liegen, nicht in einem Unterordner.
-2. Geh im Discloud-Dashboard auf **Add App** → **Upload ZIP**.
-3. Lade die ZIP-Datei hoch.
+> **Wichtig:** Die geheimen Tokens kommen **nicht** in die ZIP. Du trägst sie erst nach dem Upload im Dashboard ein (Schritt 5d).
 
-#### 5c — Umgebungsvariablen setzen
+Für die ZIP brauchst du nur die **reinen Projektdateien** — keine Tokens, kein `.env`. Wähle folgende Dateien/Ordner aus und packe sie zusammen in eine ZIP:
 
-Nach dem Upload erscheint deine App im Dashboard. Klick darauf und geh zu **Environment** (oder „Env Vars"):
+```
+discloud.config        ← muss direkt in der ZIP-Wurzel liegen, nicht in einem Unterordner!
+requirements.txt       ← muss direkt in der ZIP-Wurzel liegen (Discloud-Pflicht)
+bot/
+│   main.py
+│   geocode.py
+│   storage.py
+│   requirements.txt   ← identische Kopie, für lokales Testen
+data/
+│   users.json
+```
 
-| Variable | Wert |
+> `docs/`, `README.md`, `.gitignore` und `.env.example` brauchst du **nicht** mitzupacken — die sind nur für GitHub.
+
+**Auf Windows:** Wähle die oben genannten Dateien und Ordner im Explorer aus → Rechtsklick → „Senden an" → „ZIP-komprimierter Ordner". Stelle sicher, dass `discloud.config` ganz oben in der ZIP liegt (nicht innerhalb eines Unterordners).
+
+#### 5c — ZIP hochladen
+
+1. Geh im Discloud-Dashboard auf **Add App**.
+2. Wähle **Upload ZIP** und lade deine ZIP-Datei hoch.
+3. Discloud liest automatisch die `discloud.config` und richtet die App ein.
+4. Der Bot startet jetzt — aber er wird noch **abstürzen**, weil die Tokens fehlen. Das ist normal. Weiter mit Schritt 5d.
+
+#### 5d — Geheime Tokens im Dashboard eintragen
+
+Jetzt trägst du die vier Umgebungsvariablen (die geheimen Werte) sicher im Dashboard ein:
+
+1. Klick im Dashboard auf deine App (sie heißt `community-map-bot`).
+2. Geh auf den Tab **Config** (oder **Environment** / **Env Vars** — je nach Discloud-Version).
+3. Trage dort diese vier Variablen ein, eine nach der anderen:
+
+| Variable | Was du einträgst |
 |---|---|
 | `DISCORD_TOKEN` | Dein Discord-Bot-Token (aus Schritt 2) |
 | `GITHUB_TOKEN` | Dein GitHub-Token (aus Schritt 3) |
 | `GITHUB_REPO` | `DEINUSERNAME/discord_map_bot` |
 | `MAP_URL` | `https://DEINUSERNAME.github.io/discord_map_bot` |
 
-Speichere die Variablen. Discloud startet den Bot automatisch neu.
+4. Speichere die Variablen. Discloud startet den Bot automatisch neu.
 
-#### 5d — Status prüfen
+#### 5e — Status prüfen
 
-Im Dashboard siehst du, ob der Bot läuft (grüner Punkt). Im Log-Tab kannst du die Ausgabe sehen — dort sollte erscheinen:
+Im Dashboard siehst du einen **grünen Punkt** wenn der Bot läuft. Klick auf den Tab **Logs** — dort sollte nach wenigen Sekunden erscheinen:
+
 ```
 Bot läuft als DeinBotName#1234
 ```
+
+Falls dort ein Fehler steht, prüfe ob alle vier Variablen aus Schritt 5d korrekt eingetragen sind.
 
 ---
 
