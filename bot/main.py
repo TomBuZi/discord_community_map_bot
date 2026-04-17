@@ -142,6 +142,42 @@ async def loeschen(interaction: discord.Interaction):
         await interaction.followup.send("Du warst nicht auf der Karte eingetragen.", ephemeral=True)
 
 
+@tree.command(name="admin_loeschen", description="[Admin] Entfernt den Karteneintrag eines anderen Nutzers.")
+@app_commands.describe(nutzer="Der Nutzer, dessen Eintrag entfernt werden soll.")
+@app_commands.checks.has_permissions(administrator=True)
+async def admin_loeschen(interaction: discord.Interaction, nutzer: discord.Member):
+    await interaction.response.defer(ephemeral=True)
+
+    try:
+        removed = storage.remove_user(repo, str(nutzer.id))
+    except GithubException:
+        await interaction.followup.send(
+            "Es gab einen Fehler beim Löschen. Bitte versuch es in einem Moment erneut.",
+            ephemeral=True,
+        )
+        return
+
+    if removed:
+        await interaction.followup.send(
+            f"Der Eintrag von **{nutzer.display_name}** wurde von der Karte entfernt.",
+            ephemeral=True,
+        )
+    else:
+        await interaction.followup.send(
+            f"**{nutzer.display_name}** war nicht auf der Karte eingetragen.",
+            ephemeral=True,
+        )
+
+
+@admin_loeschen.error
+async def admin_loeschen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message(
+            "Du hast keine Berechtigung für diesen Befehl.",
+            ephemeral=True,
+        )
+
+
 @tree.command(name="karte", description="Zeigt den Link zur Community-Karte.")
 async def karte(interaction: discord.Interaction):
     await interaction.response.send_message(
