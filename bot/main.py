@@ -38,20 +38,31 @@ Bist du einverstanden?"""
 
 
 class EintragungView(discord.ui.View):
-    def __init__(self, name: str, plz: str, lat: float, lng: float, discord_id: str):
+    def __init__(self, name: str, plz: str, discord_id: str):
         super().__init__(timeout=60)
         self.name = name
         self.plz = plz
-        self.lat = lat
-        self.lng = lng
         self.discord_id = discord_id
+        self.message = None
 
     @discord.ui.button(label="Einverstanden", style=discord.ButtonStyle.success, emoji="✅")
     async def bestaetigen(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
-        self.disable_all_items()
+        for item in self.children:
+            item.disabled = True
+
+        coords = geocode.get_coords(self.plz)
+        if coords is None:
+            await interaction.edit_original_response(
+                content=f"Die Postleitzahl **{self.plz}** wurde leider nicht gefunden. Bitte versuch es erneut.",
+                view=self,
+            )
+            return
+
+        lat, lng = coords
+
         try:
-            storage.add_user(repo, self.discord_id, self.name, self.plz, self.lat, self.lng)
+            storage.add_user(repo, self.discord_id, self.name, self.plz, lat, lng)
         except GithubException:
             await interaction.edit_original_response(
                 content="Es gab einen Fehler beim Speichern. Bitte versuch es in einem Moment erneut.",
@@ -60,20 +71,32 @@ class EintragungView(discord.ui.View):
             return
 
         await interaction.edit_original_response(
-            content=f"✅ Du wurdest eingetragen! **{self.name}** aus PLZ **{self.plz}** ist jetzt auf der Karte.\nDie Karte: {MAP_URL}\n\n_Möchtest du deinen Eintrag später entfernen, nutze einfach `/loeschen`._",
+            content=(
+                f"✅ Du wurdest eingetragen! **{self.name}** aus PLZ **{self.plz}** ist jetzt auf der Karte.\n"
+                f"Die Karte: {MAP_URL}\n\n"
+                f"_Es kann bis zu 10 Minuten dauern, bis dein Eintrag auf der Karte sichtbar ist._\n"
+                f"_Möchtest du deinen Eintrag später entfernen, nutze einfach `/loeschen`._"
+            ),
             view=self,
         )
 
     @discord.ui.button(label="Abbrechen", style=discord.ButtonStyle.danger, emoji="❌")
     async def abbrechen(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.disable_all_items()
+        for item in self.children:
+            item.disabled = True
         await interaction.response.edit_message(
             content="Kein Problem — du wurdest nicht eingetragen.",
             view=self,
         )
 
     async def on_timeout(self):
-        self.disable_all_items()
+        for item in self.children:
+            item.disabled = True
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except discord.HTTPException:
+                pass
 
 
 @client.event
@@ -88,27 +111,16 @@ async def on_ready():
     plz="Deine Postleitzahl (5 Ziffern)",
 )
 async def eintragen(interaction: discord.Interaction, name: str, plz: str):
-    await interaction.response.defer(ephemeral=True)
-
     if not (plz.isdigit() and len(plz) == 5):
-        await interaction.followup.send(
+        await interaction.response.send_message(
             "Die Postleitzahl muss genau 5 Ziffern haben (z.B. `10115`).",
             ephemeral=True,
         )
         return
 
-    coords = geocode.get_coords(plz)
-    if coords is None:
-        await interaction.followup.send(
-            f"Die Postleitzahl **{plz}** wurde leider nicht gefunden. "
-            "Bitte überprüfe sie und versuch es erneut.",
-            ephemeral=True,
-        )
-        return
-
-    lat, lng = coords
-    view = EintragungView(name, plz, lat, lng, str(interaction.user.id))
-    await interaction.followup.send(DATENSCHUTZ_HINWEIS, view=view, ephemeral=True)
+    view = EintragungView(name, plz, str(interaction.user.id))
+    await interaction.response.send_message(DATENSCHUTZ_HINWEIS, view=view, ephemeral=True)
+    view.message = await interaction.original_response()
 
 
 @tree.command(name="loeschen", description="Entferne deinen Eintrag von der Karte.")
