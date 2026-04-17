@@ -48,18 +48,19 @@ class EintragungView(discord.ui.View):
 
     @discord.ui.button(label="Einverstanden", style=discord.ButtonStyle.success, emoji="✅")
     async def bestaetigen(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
         self.disable_all_items()
         try:
             storage.add_user(repo, self.discord_id, self.name, self.plz, self.lat, self.lng)
         except GithubException:
-            await interaction.response.edit_message(
+            await interaction.edit_original_response(
                 content="Es gab einen Fehler beim Speichern. Bitte versuch es in einem Moment erneut.",
                 view=self,
             )
             return
 
-        await interaction.response.edit_message(
-            content=f"✅ Du wurdest eingetragen! **{self.name}** aus PLZ **{self.plz}** ist jetzt auf der Karte.\nDie Karte: {MAP_URL}",
+        await interaction.edit_original_response(
+            content=f"✅ Du wurdest eingetragen! **{self.name}** aus PLZ **{self.plz}** ist jetzt auf der Karte.\nDie Karte: {MAP_URL}\n\n_Möchtest du deinen Eintrag später entfernen, nutze einfach `/loeschen`._",
             view=self,
         )
 
