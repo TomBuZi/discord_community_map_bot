@@ -13,12 +13,66 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 MAP_URL = os.getenv("MAP_URL")
+
 gh = Github(GITHUB_TOKEN)
 repo = gh.get_repo(GITHUB_REPO)
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
+
+DATENSCHUTZ_HINWEIS = """🔒 **Datenschutzhinweis**
+
+Durch die Eintragung werden folgende Daten **öffentlich** auf einer Karte angezeigt:
+• Dein Anzeigename
+• Deine Postleitzahl
+• Dein Discord-Profil (als klickbarer Link)
+
+Diese Daten sind für jeden einsehbar, der die Karte aufruft.
+
+**Verantwortlich:** @tom_buzi (per Discord-DM erreichbar)
+**Löschung:** jederzeit mit `/loeschen`
+**Speicherdauer:** bis zur Löschung durch dich oder Auflösung des Servers
+
+Bist du einverstanden?"""
+
+
+class EintragungView(discord.ui.View):
+    def __init__(self, name: str, plz: str, lat: float, lng: float, discord_id: str):
+        super().__init__(timeout=60)
+        self.name = name
+        self.plz = plz
+        self.lat = lat
+        self.lng = lng
+        self.discord_id = discord_id
+
+    @discord.ui.button(label="Einverstanden", style=discord.ButtonStyle.success, emoji="✅")
+    async def bestaetigen(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.disable_all_items()
+        try:
+            storage.add_user(repo, self.discord_id, self.name, self.plz, self.lat, self.lng)
+        except GithubException:
+            await interaction.response.edit_message(
+                content="Es gab einen Fehler beim Speichern. Bitte versuch es in einem Moment erneut.",
+                view=self,
+            )
+            return
+
+        await interaction.response.edit_message(
+            content=f"✅ Du wurdest eingetragen! **{self.name}** aus PLZ **{self.plz}** ist jetzt auf der Karte.\nDie Karte: {MAP_URL}",
+            view=self,
+        )
+
+    @discord.ui.button(label="Abbrechen", style=discord.ButtonStyle.danger, emoji="❌")
+    async def abbrechen(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.disable_all_items()
+        await interaction.response.edit_message(
+            content="Kein Problem — du wurdest nicht eingetragen.",
+            view=self,
+        )
+
+    async def on_timeout(self):
+        self.disable_all_items()
 
 
 @client.event
@@ -52,21 +106,8 @@ async def eintragen(interaction: discord.Interaction, name: str, plz: str):
         return
 
     lat, lng = coords
-
-    try:
-        storage.add_user(repo, str(interaction.user.id), name, plz, lat, lng)
-    except GithubException:
-        await interaction.followup.send(
-            "Es gab einen Fehler beim Speichern. Bitte versuch es in einem Moment erneut.",
-            ephemeral=True,
-        )
-        return
-
-    await interaction.followup.send(
-        f"Du wurdest eingetragen! **{name}** aus PLZ **{plz}** ist jetzt auf der Karte.\n"
-        f"Die Karte: {MAP_URL}",
-        ephemeral=True,
-    )
+    view = EintragungView(name, plz, lat, lng, str(interaction.user.id))
+    await interaction.followup.send(DATENSCHUTZ_HINWEIS, view=view, ephemeral=True)
 
 
 @tree.command(name="loeschen", description="Entferne deinen Eintrag von der Karte.")

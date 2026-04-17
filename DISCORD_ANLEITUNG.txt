@@ -1,0 +1,27 @@
+# 🗺️ Community-Karte
+
+Trag dich auf unserer gemeinsamen Karte ein! Alle Mitglieder sind als Marker sichtbar – klick drauf um zum Discord-Profil zu kommen.
+
+## Befehle
+
+📍 `/eintragen` – Trägt dich mit Name und Postleitzahl in die Karte ein. Wer sich mehrfach einträgt, überschreibt einfach seinen alten Eintrag.
+
+🗑️ `/loeschen` – Entfernt deinen Eintrag von der Karte.
+
+🌍 `/karte` – Postet den Link zur Karte in den Channel.
+
+## Hinweise
+- Nur deutsche Postleitzahlen (5 Ziffern)
+- Auf der Karte ist dein Name sichtbar – klickst du den Marker an, kommst du direkt zu deinem Discord-Profil
+- Nach dem Eintragen kann es ein paar Minuten dauern bis du auf der Karte erscheinst
+
+## 🔒 Datenschutz
+Die Teilnahme ist freiwillig. Der Bot fragt beim Eintragen ausdrücklich nach deiner Zustimmung.
+
+Folgende Daten werden öffentlich gespeichert und sind für jeden einsehbar, der die Karte aufruft:
+- Dein selbst gewählter Anzeigename
+- Deine Postleitzahl
+- Dein Discord-Profil (als Link)
+
+Verantwortlich: @tom_buzi (per Discord-DM erreichbar)
+Löschung jederzeit mit `/loeschen` – oder wende dich an @tom_buzi.
