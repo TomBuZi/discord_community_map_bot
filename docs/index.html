@@ -7,10 +7,13 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-search@3.0.9/dist/leaflet-search.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol@0.81.1/dist/L.Control.Locate.min.css"/>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: sans-serif; }
     #map { height: 100vh; width: 100%; }
+
     #info {
       position: absolute;
       top: 10px;
@@ -22,17 +25,122 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       font-size: 14px;
       color: #333;
+      transition: right 0.25s ease;
     }
+    #info.shifted { right: 290px; }
+
+    #list-toggle {
+      position: absolute;
+      top: 46px;
+      right: 10px;
+      z-index: 1002;
+      background: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-size: 13px;
+      color: #333;
+      transition: right 0.25s ease;
+    }
+    #list-toggle:hover { background: #f5f5f5; }
+
+    #sidebar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1001;
+      width: 280px;
+      background: white;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+    }
+    #sidebar.open { transform: translateX(0); }
+
+    #sidebar-header {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #sidebar-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #sidebar-title { font-size: 14px; font-weight: bold; color: #333; }
+    #sidebar-close {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: #888;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    #sidebar-close:hover { background: #f0f0f0; }
+
+    #sidebar-sort { display: flex; gap: 6px; }
+    .sort-btn {
+      flex: 1;
+      padding: 5px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      color: #555;
+    }
+    .sort-btn.active {
+      background: #4a90d9;
+      color: white;
+      border-color: #4a90d9;
+    }
+
+    #user-list { flex: 1; overflow-y: auto; }
+    .user-item {
+      padding: 9px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .user-item:hover { background: #f5f9ff; }
+    .user-name { font-size: 13px; font-weight: 500; color: #333; }
+    .user-plz { font-size: 12px; color: #888; }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <div id="info">Lade Einträge...</div>
+  <button id="list-toggle">☰ Liste</button>
+
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <div id="sidebar-top">
+        <div id="sidebar-title">Mitglieder</div>
+        <button id="sidebar-close">✕</button>
+      </div>
+      <div id="sidebar-sort">
+        <button class="sort-btn active" id="sort-name">A–Z Name</button>
+        <button class="sort-btn" id="sort-plz">PLZ ↑</button>
+      </div>
+    </div>
+    <div id="user-list"></div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/leaflet-search@3.0.9/dist/leaflet-search.min.js"></script>
+  <script src="https://unpkg.com/leaflet.locatecontrol@0.81.1/dist/L.Control.Locate.min.js"></script>
   <script>
-    // Karte initialisieren, zentriert auf Deutschland
     const map = L.map('map').setView([51.1657, 10.4515], 6);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -40,39 +148,120 @@
       maxZoom: 18,
     }).addTo(map);
 
+    L.control.locate({
+      position: 'topleft',
+      flyTo: true,
+      strings: { title: 'Meinen Standort anzeigen' },
+      locateOptions: { maxZoom: 12 },
+    }).addTo(map);
+
     const DATA_URL = 'https://raw.githubusercontent.com/TomBuZi/discord_community_map_data/main/data/users.json';
 
-    const infoBox = document.getElementById('info');
+    const infoBox     = document.getElementById('info');
+    const sidebar     = document.getElementById('sidebar');
+    const listToggle  = document.getElementById('list-toggle');
+    const sidebarClose = document.getElementById('sidebar-close');
+    const userListEl  = document.getElementById('user-list');
+    const sortNameBtn = document.getElementById('sort-name');
+    const sortPlzBtn  = document.getElementById('sort-plz');
+
+    let allUsers    = [];
+    let markerMap   = {};   // discord_id -> marker
+    let currentSort = 'name';
+
+    const cluster = L.markerClusterGroup({ maxClusterRadius: 40 });
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      listToggle.style.right = '290px';
+      infoBox.classList.add('shifted');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      listToggle.style.right = '10px';
+      infoBox.classList.remove('shifted');
+    }
+
+    listToggle.addEventListener('click', () => {
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+    sidebarClose.addEventListener('click', closeSidebar);
+
+    sortNameBtn.addEventListener('click', () => {
+      currentSort = 'name';
+      sortNameBtn.classList.add('active');
+      sortPlzBtn.classList.remove('active');
+      renderList();
+    });
+    sortPlzBtn.addEventListener('click', () => {
+      currentSort = 'plz';
+      sortPlzBtn.classList.add('active');
+      sortNameBtn.classList.remove('active');
+      renderList();
+    });
+
+    function renderList() {
+      const sorted = [...allUsers].sort((a, b) =>
+        currentSort === 'name'
+          ? a.name.localeCompare(b.name, 'de')
+          : a.plz.localeCompare(b.plz)
+      );
+
+      userListEl.innerHTML = '';
+      sorted.forEach(user => {
+        const item = document.createElement('div');
+        item.className = 'user-item';
+        item.innerHTML =
+          `<span class="user-name">${escapeHtml(user.name)}</span>` +
+          `<span class="user-plz">${escapeHtml(user.plz)}</span>`;
+        item.addEventListener('click', () => {
+          const marker = markerMap[user.discord_id];
+          if (marker) cluster.zoomToShowLayer(marker, () => marker.openPopup());
+        });
+        userListEl.appendChild(item);
+      });
+    }
 
     fetch(DATA_URL)
-      .then(response => {
-        if (!response.ok) throw new Error('Netzwerkfehler');
-        return response.json();
-      })
+      .then(r => { if (!r.ok) throw new Error('Netzwerkfehler'); return r.json(); })
       .then(users => {
+        allUsers = users;
+
         if (users.length === 0) {
           infoBox.textContent = 'Noch keine Einträge vorhanden.';
           return;
         }
 
-        const cluster = L.markerClusterGroup({ maxClusterRadius: 40 });
-
         users.forEach(user => {
-          const popup = `
-            <b>${escapeHtml(user.name)}</b><br>
-            PLZ: ${escapeHtml(user.plz)}<br>
-            <a href="https://discord.com/users/${escapeHtml(user.discord_id)}" target="_blank" rel="noopener">
-              Discord Profil öffnen
-            </a>
-          `;
-          L.marker([user.lat, user.lng])
-            .bindPopup(popup)
-            .addTo(cluster);
+          const popup =
+            `<b>${escapeHtml(user.name)}</b><br>` +
+            `PLZ: ${escapeHtml(user.plz)}<br>` +
+            `<a href="https://discord.com/users/${escapeHtml(user.discord_id)}" target="_blank" rel="noopener">Discord Profil öffnen</a>`;
+
+          const marker = L.marker([user.lat, user.lng], { title: user.name })
+            .bindPopup(popup);
+          cluster.addLayer(marker);
+          markerMap[user.discord_id] = marker;
         });
 
         map.addLayer(cluster);
-
+        renderList();
         infoBox.textContent = `${users.length} Mitglied${users.length === 1 ? '' : 'er'} auf der Karte`;
+
+        L.Control.Search({
+          layer: cluster,
+          propertyName: 'title',
+          zoom: 13,
+          initial: false,
+          collapsed: true,
+          textPlaceholder: 'Name suchen…',
+          moveToLocation: function(latlng, title) {
+            const marker = Object.values(markerMap).find(m => m.options.title === title);
+            if (marker) cluster.zoomToShowLayer(marker, () => marker.openPopup());
+            else map.setView(latlng, 13);
+          },
+        }).addTo(map);
       })
       .catch(err => {
         console.error('Fehler beim Laden der Daten:', err);
