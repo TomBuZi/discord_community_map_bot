@@ -384,9 +384,15 @@
     }
 
     document.getElementById('toggle-labels').addEventListener('change', function() {
-      Object.values(markerMap).forEach(m => this.checked ? m.openTooltip() : m.closeTooltip());
-      if (this.checked) applyClusterTooltips();
-      else removeClusterTooltips();
+      if (this.checked) {
+        Object.values(markerMap).forEach(m =>
+          m.bindTooltip(m.options.title, { permanent: true, className: 'marker-label', direction: 'right' }).openTooltip()
+        );
+        applyClusterTooltips();
+      } else {
+        Object.values(markerMap).forEach(m => m.unbindTooltip());
+        removeClusterTooltips();
+      }
     });
 
     document.getElementById('toggle-cluster').addEventListener('change', function() {
@@ -526,7 +532,6 @@
               `<a href="https://discord.com/users/${escapeHtml(user.discord_id)}" target="_blank" rel="noopener">Discord Profil öffnen</a>`;
             marker = L.marker([user.lat, user.lng], { title: user.name });
           }
-          marker.bindTooltip(user.name, { permanent: true, className: 'marker-label', direction: 'right' }).closeTooltip();
           marker.bindPopup(popup);
           if (user.type === 'admin') {
             map.addLayer(marker);
