@@ -231,6 +231,17 @@
       cursor: pointer;
       user-select: none;
     }
+    .marker-label {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 2px 5px;
+      font-size: 11px;
+      color: #333;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .marker-label::before { display: none; }
   </style>
 </head>
 <body>
@@ -239,6 +250,7 @@
   <div id="map-controls">
     <label><input type="checkbox" id="toggle-admin" checked> Admin-Marker</label>
     <label><input type="checkbox" id="toggle-cluster" checked> Clustering</label>
+    <label><input type="checkbox" id="toggle-labels"> Beschriftung</label>
   </div>
   <div id="join-hint">
     Auch auf der Karte? Tritt unserem <a href="https://discord.gg/VDQT8xdqdw" target="_blank" rel="noopener">Discord-Server</a> bei und nutze <strong>/eintragen</strong>.
@@ -352,6 +364,10 @@
     document.getElementById('toggle-admin').addEventListener('change', function() {
       adminVisible = this.checked;
       adminMarkers.forEach(m => adminVisible ? map.addLayer(m) : map.removeLayer(m));
+    });
+
+    document.getElementById('toggle-labels').addEventListener('change', function() {
+      Object.values(markerMap).forEach(m => this.checked ? m.openTooltip() : m.closeTooltip());
     });
 
     document.getElementById('toggle-cluster').addEventListener('change', function() {
@@ -487,6 +503,7 @@
               `<a href="https://discord.com/users/${escapeHtml(user.discord_id)}" target="_blank" rel="noopener">Discord Profil öffnen</a>`;
             marker = L.marker([user.lat, user.lng], { title: user.name });
           }
+          marker.bindTooltip(user.name, { permanent: true, className: 'marker-label', direction: 'right' }).closeTooltip();
           marker.bindPopup(popup);
           if (user.type === 'admin') {
             map.addLayer(marker);
