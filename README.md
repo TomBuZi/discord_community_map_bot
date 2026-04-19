@@ -11,7 +11,8 @@ Ein Discord-Bot, mit dem sich Server-Mitglieder mit Name und Postleitzahl auf ei
 | `/find km:<zahl>` | Nur dich | Mitglieder im Umkreis suchen, sortiert nach Distanz |
 | `/loeschen` | Nur dich | Eigenen Eintrag entfernen |
 | `/karte` | Nur dich | Link zur Karte anzeigen |
-| `/admin_loeschen nutzer:<@nutzer>` | Nur dich (nur Admins) | Eintrag eines anderen Nutzers entfernen |
+| `/admin_user_loeschen` | Nur dich (nur Admins) | Eintrag eines Nutzers entfernen (Dropdown-Auswahl) |
+| `/admin_eintrag_loeschen` | Nur dich (nur Admins) | Admin-Eintrag entfernen (Dropdown-Auswahl) |
 
 ---
 

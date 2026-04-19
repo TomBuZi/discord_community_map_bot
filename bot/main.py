@@ -157,14 +157,24 @@ async def loeschen(interaction: discord.Interaction):
         await interaction.followup.send("Du warst nicht auf der Karte eingetragen.", ephemeral=True)
 
 
-@tree.command(name="admin_loeschen", description="[Admin] Entfernt den Karteneintrag eines anderen Nutzers.")
-@app_commands.describe(nutzer="Der Nutzer, dessen Eintrag entfernt werden soll.")
+async def user_eintraege_autocomplete(interaction: discord.Interaction, current: str):
+    users = storage.get_users(data_repo)
+    return [
+        app_commands.Choice(name=f"{u['name']} ({u.get('plz', '?')})", value=u["discord_id"])
+        for u in users
+        if u.get("type") != "admin" and current.lower() in u["name"].lower()
+    ][:25]
+
+
+@tree.command(name="admin_user_loeschen", description="[Admin] Entfernt den Karteneintrag eines Nutzers.")
+@app_commands.describe(nutzer="Nutzer aus der Karte auswählen")
+@app_commands.autocomplete(nutzer=user_eintraege_autocomplete)
 @app_commands.checks.has_permissions(administrator=True)
-async def admin_loeschen(interaction: discord.Interaction, nutzer: discord.Member):
+async def admin_user_loeschen(interaction: discord.Interaction, nutzer: str):
     await interaction.response.defer(ephemeral=True)
 
     try:
-        removed = storage.remove_user(data_repo, str(nutzer.id))
+        removed = storage.remove_user(data_repo, nutzer)
     except GithubException:
         await interaction.followup.send(
             "Es gab einen Fehler beim Löschen. Bitte versuch es in einem Moment erneut.",
@@ -174,12 +184,12 @@ async def admin_loeschen(interaction: discord.Interaction, nutzer: discord.Membe
 
     if removed:
         await interaction.followup.send(
-            f"Der Eintrag von **{nutzer.display_name}** wurde von der Karte entfernt.",
+            "Der Eintrag wurde von der Karte entfernt.",
             ephemeral=True,
         )
     else:
         await interaction.followup.send(
-            f"**{nutzer.display_name}** war nicht auf der Karte eingetragen.",
+            "Dieser Nutzer war nicht auf der Karte eingetragen.",
             ephemeral=True,
         )
 
@@ -289,8 +299,8 @@ async def admin_eintrag_loeschen_error(interaction: discord.Interaction, error: 
         )
 
 
-@admin_loeschen.error
-async def admin_loeschen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+@admin_user_loeschen.error
+async def admin_user_loeschen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
     if isinstance(error, app_commands.MissingPermissions):
         await interaction.response.send_message(
             "Du hast keine Berechtigung für diesen Befehl.",
@@ -362,7 +372,7 @@ HILFE_ADMIN = """
 ⚙️ **Admin-Befehle**
 📌 `/admin_eintragen` – Trägt einen Ort oder eine Organisation ein (roter Marker).
 🗑️ `/admin_eintrag_loeschen` – Entfernt einen Admin-Eintrag per Name.
-❌ `/admin_loeschen` – Entfernt den Eintrag eines Nutzers."""
+❌ `/admin_user_loeschen` – Entfernt den Karteneintrag eines Nutzers (Dropdown-Auswahl)."""
 
 
 @tree.command(name="hilfe", description="Zeigt alle Befehle und Hinweise zur Community-Karte.")
