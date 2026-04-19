@@ -341,6 +341,8 @@ async def find(interaction: discord.Interaction, km: int):
 
     nearby = []
     for u in users:
+        if u.get("type") == "admin":
+            continue
         if u.get("discord_id") == str(interaction.user.id):
             continue
         dist = haversine_km(own["lat"], own["lng"], u["lat"], u["lng"])
@@ -356,9 +358,12 @@ async def find(interaction: discord.Interaction, km: int):
         )
         return
 
-    lines = [f"**Mitglieder im Umkreis von {km} km:**"]
-    for dist, u in nearby:
+    MAX = 30
+    lines = [f"**Mitglieder im Umkreis von {km} km ({len(nearby)}):**"]
+    for dist, u in nearby[:MAX]:
         lines.append(f"• {u['name']} (<@{u['discord_id']}>) — {dist:.0f} km")
+    if len(nearby) > MAX:
+        lines.append(f"_… und {len(nearby) - MAX} weitere. Verkleinere den Radius für eine vollständige Liste._")
 
     await interaction.followup.send("\n".join(lines), ephemeral=True)
 
