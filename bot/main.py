@@ -12,10 +12,12 @@ load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
+GITHUB_DATA_REPO = os.getenv("GITHUB_DATA_REPO")
 MAP_URL = os.getenv("MAP_URL")
 
 gh = Github(GITHUB_TOKEN)
 repo = gh.get_repo(GITHUB_REPO)
+data_repo = gh.get_repo(GITHUB_DATA_REPO)
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
@@ -63,7 +65,7 @@ class EintragungView(discord.ui.View):
         lat, lng = coords
 
         try:
-            storage.add_user(repo, self.discord_id, self.name, self.plz, lat, lng)
+            storage.add_user(data_repo, self.discord_id, self.name, self.plz, lat, lng)
         except GithubException:
             await interaction.edit_original_response(
                 content="Es gab einen Fehler beim Speichern. Bitte versuch es in einem Moment erneut.",
@@ -132,7 +134,7 @@ async def loeschen(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
     try:
-        removed = storage.remove_user(repo, str(interaction.user.id))
+        removed = storage.remove_user(data_repo, str(interaction.user.id))
     except GithubException:
         await interaction.followup.send(
             "Es gab einen Fehler beim Löschen. Bitte versuch es in einem Moment erneut.",
@@ -153,7 +155,7 @@ async def admin_loeschen(interaction: discord.Interaction, nutzer: discord.Membe
     await interaction.response.defer(ephemeral=True)
 
     try:
-        removed = storage.remove_user(repo, str(nutzer.id))
+        removed = storage.remove_user(data_repo, str(nutzer.id))
     except GithubException:
         await interaction.followup.send(
             "Es gab einen Fehler beim Löschen. Bitte versuch es in einem Moment erneut.",
