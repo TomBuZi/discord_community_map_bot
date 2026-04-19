@@ -184,6 +184,97 @@ async def admin_loeschen(interaction: discord.Interaction, nutzer: discord.Membe
         )
 
 
+@tree.command(name="admin_eintragen", description="[Admin] Trägt einen Ort oder eine Organisation in die Karte ein.")
+@app_commands.describe(
+    name="Anzeigename auf der Karte",
+    plz="Postleitzahl",
+    strasse="Straße (optional)",
+    hausnummer="Hausnummer (optional)",
+    land="Land (Standard: Deutschland)",
+    url="Webadresse (optional)",
+)
+@app_commands.checks.has_permissions(administrator=True)
+async def admin_eintragen(
+    interaction: discord.Interaction,
+    name: str,
+    plz: str,
+    strasse: str = None,
+    hausnummer: str = None,
+    land: str = "Deutschland",
+    url: str = None,
+):
+    await interaction.response.defer(ephemeral=True)
+
+    coords = geocode.get_coords(plz, land, strasse, hausnummer)
+    if coords is None:
+        await interaction.followup.send(
+            f"Die Adresse **{plz}, {land}** wurde nicht gefunden. Bitte prüfe die Angaben.",
+            ephemeral=True,
+        )
+        return
+
+    lat, lng = coords
+    try:
+        storage.add_admin_entry(data_repo, name, plz, land, lat, lng, strasse, hausnummer, url)
+    except GithubException:
+        await interaction.followup.send(
+            "Es gab einen Fehler beim Speichern. Bitte versuch es in einem Moment erneut.",
+            ephemeral=True,
+        )
+        return
+
+    await interaction.followup.send(
+        f"✅ **{name}** wurde als Admin-Eintrag in die Karte eingetragen.\n"
+        f"_Es kann bis zu 10 Minuten dauern, bis der Eintrag auf der Karte sichtbar ist._",
+        ephemeral=True,
+    )
+
+
+@admin_eintragen.error
+async def admin_eintragen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message(
+            "Du hast keine Berechtigung für diesen Befehl.",
+            ephemeral=True,
+        )
+
+
+@tree.command(name="admin_eintrag_loeschen", description="[Admin] Entfernt einen Admin-Karteneintrag per Name.")
+@app_commands.describe(name="Name des Eintrags (exakt wie eingetragen)")
+@app_commands.checks.has_permissions(administrator=True)
+async def admin_eintrag_loeschen(interaction: discord.Interaction, name: str):
+    await interaction.response.defer(ephemeral=True)
+
+    try:
+        removed = storage.remove_admin_entry(data_repo, name)
+    except GithubException:
+        await interaction.followup.send(
+            "Es gab einen Fehler beim Löschen. Bitte versuch es in einem Moment erneut.",
+            ephemeral=True,
+        )
+        return
+
+    if removed:
+        await interaction.followup.send(
+            f"Admin-Eintrag **{name}** wurde von der Karte entfernt.",
+            ephemeral=True,
+        )
+    else:
+        await interaction.followup.send(
+            f"Kein Admin-Eintrag mit dem Namen **{name}** gefunden.",
+            ephemeral=True,
+        )
+
+
+@admin_eintrag_loeschen.error
+async def admin_eintrag_loeschen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message(
+            "Du hast keine Berechtigung für diesen Befehl.",
+            ephemeral=True,
+        )
+
+
 @admin_loeschen.error
 async def admin_loeschen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
     if isinstance(error, app_commands.MissingPermissions):
