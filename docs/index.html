@@ -383,10 +383,6 @@
       });
     }
 
-    cluster.on('animationend', () => {
-      if (document.getElementById('toggle-labels').checked) applyClusterTooltips();
-    });
-
     document.getElementById('toggle-labels').addEventListener('change', function() {
       Object.values(markerMap).forEach(m => this.checked ? m.openTooltip() : m.closeTooltip());
       if (this.checked) applyClusterTooltips();
@@ -416,6 +412,10 @@
     });
 
     const cluster = L.markerClusterGroup({ maxClusterRadius: 40 });
+
+    cluster.on('animationend', () => {
+      if (document.getElementById('toggle-labels').checked) applyClusterTooltips();
+    });
 
     function openSidebar() {
       sidebar.classList.add('open');
