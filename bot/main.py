@@ -181,7 +181,8 @@ async def admin_loeschen_error(interaction: discord.Interaction, error: app_comm
 @tree.command(name="karte", description="Zeigt den Link zur Community-Karte.")
 async def karte(interaction: discord.Interaction):
     await interaction.response.send_message(
-        f"Hier ist die Community-Karte: {MAP_URL}"
+        f"Hier ist die Community-Karte: {MAP_URL}",
+        ephemeral=True,
     )
 
 

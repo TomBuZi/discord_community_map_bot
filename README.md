@@ -8,7 +8,8 @@ Ein Discord-Bot, mit dem sich Server-Mitglieder mit Name und Postleitzahl auf ei
 |---|---|---|
 | `/eintragen name:<name> plz:<plz>` | Nur dich | Eintragen oder Eintrag aktualisieren |
 | `/loeschen` | Nur dich | Eigenen Eintrag entfernen |
-| `/karte` | Alle im Channel | Link zur Karte posten |
+| `/karte` | Nur dich | Link zur Karte anzeigen |
+| `/admin_loeschen nutzer:<@nutzer>` | Nur dich (nur Admins) | Eintrag eines anderen Nutzers entfernen |
 
 ---
 

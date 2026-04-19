@@ -8,7 +8,7 @@ Trag dich auf unserer gemeinsamen Karte ein! Alle Mitglieder sind als Marker sic
 
 🗑️ `/loeschen` – Entfernt deinen Eintrag von der Karte.
 
-🌍 `/karte` – Postet den Link zur Karte in den Channel.
+🌍 `/karte` – Zeigt dir den Link zur Karte (nur für dich sichtbar).
 
 ## Hinweise
 - Nur deutsche Postleitzahlen (5 Ziffern)
