@@ -16,6 +16,15 @@ Ein Discord-Bot, mit dem sich Server-Mitglieder mit Name und Postleitzahl auf ei
 
 ---
 
+## Bot einladen
+
+**Direkt-Link (Guild Install):**
+[Bot zum Server einladen](https://discord.com/oauth2/authorize?client_id=1494686623735222332&permissions=2048&integration_type=0&scope=bot+applications.commands)
+
+Dieser Link macht den Bot zum echten Servermitglied (erscheint in der Mitgliederliste). Bitte diesen Link verwenden — nicht den „User zum Server hinzufügen"-Button im Discord-Profil.
+
+---
+
 ## Einrichtung
 
 ### Schritt 1 — GitHub-Repository anlegen
