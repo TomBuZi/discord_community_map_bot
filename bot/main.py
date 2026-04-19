@@ -23,6 +23,13 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 GITHUB_DATA_REPO = os.getenv("GITHUB_DATA_REPO")
 MAP_URL = os.getenv("MAP_URL")
+ADMIN_GUILD_ID = int(os.getenv("ADMIN_GUILD_ID", "0"))
+
+
+def nur_admin_server():
+    async def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.guild_id == ADMIN_GUILD_ID
+    return app_commands.check(predicate)
 
 gh = Github(GITHUB_TOKEN)
 repo = gh.get_repo(GITHUB_REPO)
@@ -176,6 +183,7 @@ async def user_eintraege_autocomplete(interaction: discord.Interaction, current:
 @app_commands.describe(nutzer="Nutzer aus der Karte auswählen")
 @app_commands.autocomplete(nutzer=user_eintraege_autocomplete)
 @app_commands.checks.has_permissions(administrator=True)
+@nur_admin_server()
 async def admin_user_loeschen(interaction: discord.Interaction, nutzer: str):
     await interaction.response.defer(ephemeral=True)
 
@@ -212,6 +220,7 @@ async def admin_user_loeschen(interaction: discord.Interaction, nutzer: str):
     beschreibung="Kurzbeschreibung im Popup (optional)",
 )
 @app_commands.checks.has_permissions(administrator=True)
+@nur_admin_server()
 async def admin_eintragen(
     interaction: discord.Interaction,
     name: str,
@@ -252,7 +261,7 @@ async def admin_eintragen(
 
 @admin_eintragen.error
 async def admin_eintragen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    if isinstance(error, app_commands.MissingPermissions):
+    if isinstance(error, (app_commands.MissingPermissions, app_commands.CheckFailure)):
         await interaction.response.send_message(
             "Du hast keine Berechtigung für diesen Befehl.",
             ephemeral=True,
@@ -272,6 +281,7 @@ async def admin_eintraege_autocomplete(interaction: discord.Interaction, current
 @app_commands.describe(name="Name des Eintrags")
 @app_commands.autocomplete(name=admin_eintraege_autocomplete)
 @app_commands.checks.has_permissions(administrator=True)
+@nur_admin_server()
 async def admin_eintrag_loeschen(interaction: discord.Interaction, name: str):
     await interaction.response.defer(ephemeral=True)
 
@@ -298,7 +308,7 @@ async def admin_eintrag_loeschen(interaction: discord.Interaction, name: str):
 
 @admin_eintrag_loeschen.error
 async def admin_eintrag_loeschen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    if isinstance(error, app_commands.MissingPermissions):
+    if isinstance(error, (app_commands.MissingPermissions, app_commands.CheckFailure)):
         await interaction.response.send_message(
             "Du hast keine Berechtigung für diesen Befehl.",
             ephemeral=True,
@@ -307,7 +317,7 @@ async def admin_eintrag_loeschen_error(interaction: discord.Interaction, error: 
 
 @admin_user_loeschen.error
 async def admin_user_loeschen_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    if isinstance(error, app_commands.MissingPermissions):
+    if isinstance(error, (app_commands.MissingPermissions, app_commands.CheckFailure)):
         await interaction.response.send_message(
             "Du hast keine Berechtigung für diesen Befehl.",
             ephemeral=True,
