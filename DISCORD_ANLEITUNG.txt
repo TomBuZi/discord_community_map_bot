@@ -4,6 +4,8 @@ Trag dich auf unserer gemeinsamen Karte ein! Alle Mitglieder sind als Marker sic
 
 ## Befehle
 
+❓ `/hilfe` – Zeigt alle Befehle und Hinweise zur Karte (nur für dich sichtbar).
+
 📍 `/eintragen` – Trägt dich mit Name und Postleitzahl in die Karte ein. Wer sich mehrfach einträgt, überschreibt einfach seinen alten Eintrag.
 
 🔍 `/find km:<zahl>` – Zeigt alle Mitglieder im Umkreis von X Kilometern, sortiert nach Entfernung. Du musst selbst eingetragen sein, damit der Befehl funktioniert.
@@ -13,7 +15,7 @@ Trag dich auf unserer gemeinsamen Karte ein! Alle Mitglieder sind als Marker sic
 🌍 `/karte` – Zeigt dir den Link zur Karte (nur für dich sichtbar).
 
 ## Hinweise
-- Nur deutsche Postleitzahlen (5 Ziffern)
+- PLZ und Land werden zur Standortbestimmung genutzt (auch nicht-deutsche PLZ möglich)
 - Auf der Karte ist dein Name sichtbar – klickst du den Marker an, kommst du direkt zu deinem Discord-Profil
 - Nach dem Eintragen kann es ein paar Minuten dauern bis du auf der Karte erscheinst
 - `/find` zeigt Luftlinien-Distanzen und ist nur für dich sichtbar

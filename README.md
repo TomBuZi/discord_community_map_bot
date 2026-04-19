@@ -6,6 +6,7 @@ Ein Discord-Bot, mit dem sich Server-Mitglieder mit Name und Postleitzahl auf ei
 
 | Command | Sichtbar für | Funktion |
 |---|---|---|
+| `/hilfe` | Nur dich | Alle Befehle und Hinweise anzeigen (Admins sehen zusätzlich Admin-Befehle) |
 | `/eintragen name:<name> plz:<plz>` | Nur dich | Eintragen oder Eintrag aktualisieren |
 | `/find km:<zahl>` | Nur dich | Mitglieder im Umkreis suchen, sortiert nach Distanz |
 | `/loeschen` | Nur dich | Eigenen Eintrag entfernen |

@@ -327,6 +327,41 @@ async def find(interaction: discord.Interaction, km: int):
     await interaction.followup.send("\n".join(lines), ephemeral=True)
 
 
+HILFE_TEXT = """🗺️ **Marvel Champions Community Map**
+
+Trag dich auf unserer gemeinsamen Karte ein! Alle Mitglieder sind als Marker sichtbar.
+
+**Befehle**
+📍 `/eintragen` – Trägt dich mit Name und Postleitzahl ein. Erneutes Eintragen überschreibt den alten Eintrag.
+🔍 `/find km:<zahl>` – Zeigt alle Mitglieder im Umkreis von X Kilometern, sortiert nach Entfernung.
+🗑️ `/loeschen` – Entfernt deinen Eintrag von der Karte.
+🌍 `/karte` – Zeigt dir den Link zur Karte.
+
+**Hinweise**
+- PLZ und Land werden zur Standortbestimmung genutzt (auch nicht-deutsche PLZ möglich)
+- Auf der Karte ist dein Name sichtbar — klick auf den Marker für dein Discord-Profil
+- Nach dem Eintragen kann es ein paar Minuten dauern bis du auf der Karte erscheinst
+- `/find` zeigt Luftlinien-Distanzen und ist nur für dich sichtbar
+
+🔒 **Datenschutz**
+Die Teilnahme ist freiwillig. Gespeichert werden: dein Anzeigename, deine Postleitzahl und dein Discord-Profil (öffentlich einsehbar).
+Löschung jederzeit mit `/loeschen`. Verantwortlich: @tom_buzi (per DM erreichbar)."""
+
+HILFE_ADMIN = """
+
+⚙️ **Admin-Befehle**
+📌 `/admin_eintragen` – Trägt einen Ort oder eine Organisation ein (roter Marker).
+🗑️ `/admin_eintrag_loeschen` – Entfernt einen Admin-Eintrag per Name.
+❌ `/admin_loeschen` – Entfernt den Eintrag eines Nutzers."""
+
+
+@tree.command(name="hilfe", description="Zeigt alle Befehle und Hinweise zur Community-Karte.")
+async def hilfe(interaction: discord.Interaction):
+    ist_admin = interaction.user.guild_permissions.administrator if interaction.guild else False
+    text = HILFE_TEXT + (HILFE_ADMIN if ist_admin else "")
+    await interaction.response.send_message(text, ephemeral=True)
+
+
 @tree.command(name="karte", description="Zeigt den Link zur Community-Karte.")
 async def karte(interaction: discord.Interaction):
     await interaction.response.send_message(
