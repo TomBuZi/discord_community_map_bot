@@ -1,0 +1,8 @@
+🗺️ Ich pinne Marvel-Champions-Spieler auf eine gemeinsame Karte!
+
+📍 /eintragen – trag dich mit PLZ ein
+🔍 /find – finde Spieler in deiner Nähe
+🌍 /karte – öffne die Karte
+❓ /hilfe – alle Befehle & Infos
+
+Alle Daten freiwillig & jederzeit löschbar. Datenschutzhinweis beim Eintragen.
