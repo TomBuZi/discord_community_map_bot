@@ -114,6 +114,12 @@ class EintragungView(discord.ui.View):
 @client.event
 async def on_ready():
     await tree.sync()
+    await client.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.watching,
+            name="die Community-Karte · /hilfe",
+        )
+    )
     print(f"Bot läuft als {client.user}")
 
 
