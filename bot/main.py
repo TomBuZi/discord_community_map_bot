@@ -1,4 +1,5 @@
 import os
+import math
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
@@ -6,6 +7,14 @@ from github import Github, GithubException
 
 import geocode
 import storage
+
+
+def haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2
+    return R * 2 * math.asin(math.sqrt(a))
 
 load_dotenv()
 
@@ -182,6 +191,45 @@ async def admin_loeschen_error(interaction: discord.Interaction, error: app_comm
             "Du hast keine Berechtigung für diesen Befehl.",
             ephemeral=True,
         )
+
+
+@tree.command(name="find", description="Zeigt alle Mitglieder im Umkreis von X Kilometern.")
+@app_commands.describe(km="Suchradius in Kilometern")
+async def find(interaction: discord.Interaction, km: int):
+    await interaction.response.defer(ephemeral=True)
+
+    users = storage.get_users(data_repo)
+    own = next((u for u in users if u["discord_id"] == str(interaction.user.id)), None)
+
+    if own is None:
+        await interaction.followup.send(
+            "Du bist noch nicht auf der Karte eingetragen. Nutze `/eintragen`, um dich hinzuzufügen.",
+            ephemeral=True,
+        )
+        return
+
+    nearby = []
+    for u in users:
+        if u["discord_id"] == str(interaction.user.id):
+            continue
+        dist = haversine_km(own["lat"], own["lng"], u["lat"], u["lng"])
+        if dist <= km:
+            nearby.append((dist, u))
+
+    nearby.sort(key=lambda x: x[0])
+
+    if not nearby:
+        await interaction.followup.send(
+            f"Keine Mitglieder im Umkreis von **{km} km** gefunden.",
+            ephemeral=True,
+        )
+        return
+
+    lines = [f"**Mitglieder im Umkreis von {km} km:**"]
+    for dist, u in nearby:
+        lines.append(f"• {u['name']} (<@{u['discord_id']}>) — {dist:.0f} km")
+
+    await interaction.followup.send("\n".join(lines), ephemeral=True)
 
 
 @tree.command(name="karte", description="Zeigt den Link zur Community-Karte.")
