@@ -25,7 +25,7 @@ def save_users(repo, users: list[dict]) -> None:
     )
 
 
-def add_user(repo, discord_id: str, name: str, plz: str, lat: float, lng: float) -> None:
+def add_user(repo, discord_id: str, name: str, plz: str, land: str, lat: float, lng: float) -> None:
     """
     Fügt einen Nutzer hinzu oder aktualisiert seinen bestehenden Eintrag.
     Jeder Discord-Nutzer kann nur einen Eintrag haben.
@@ -36,6 +36,7 @@ def add_user(repo, discord_id: str, name: str, plz: str, lat: float, lng: float)
         "discord_id": discord_id,
         "name": name,
         "plz": plz,
+        "land": land,
         "lat": lat,
         "lng": lng,
     })

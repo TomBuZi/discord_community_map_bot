@@ -74,7 +74,7 @@ class EintragungView(discord.ui.View):
         lat, lng = coords
 
         try:
-            storage.add_user(data_repo, self.discord_id, self.name, self.plz, lat, lng)
+            storage.add_user(data_repo, self.discord_id, self.name, self.plz, self.land, lat, lng)
         except GithubException:
             await interaction.edit_original_response(
                 content="Es gab einen Fehler beim Speichern. Bitte versuch es in einem Moment erneut.",

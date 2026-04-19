@@ -114,6 +114,18 @@
     .user-item:hover { background: #f5f9ff; }
     .user-name { font-size: 13px; font-weight: 500; color: #333; }
     .user-plz { font-size: 12px; color: #888; }
+    .group-header {
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      background: #f7f7f7;
+      border-bottom: 1px solid #eee;
+      border-top: 1px solid #eee;
+    }
+    .group-header:first-child { border-top: none; }
 
     /* Custom Search Control */
     .leaflet-control-namesearch {
@@ -287,18 +299,40 @@
           : a.plz.localeCompare(b.plz)
       );
 
-      userListEl.innerHTML = '';
+      // Group by land; missing land defaults to Deutschland
+      const groups = new Map();
       sorted.forEach(user => {
-        const item = document.createElement('div');
-        item.className = 'user-item';
-        item.innerHTML =
-          `<span class="user-name">${escapeHtml(user.name)}</span>` +
-          `<span class="user-plz">${escapeHtml(user.plz)}</span>`;
-        item.addEventListener('click', () => {
-          const marker = markerMap[user.discord_id];
-          if (marker) cluster.zoomToShowLayer(marker, () => marker.openPopup());
+        const land = user.land || 'Deutschland';
+        if (!groups.has(land)) groups.set(land, []);
+        groups.get(land).push(user);
+      });
+
+      // Deutschland first, rest alphabetical
+      const order = [...groups.keys()].sort((a, b) => {
+        if (a === 'Deutschland') return -1;
+        if (b === 'Deutschland') return 1;
+        return a.localeCompare(b, 'de');
+      });
+
+      userListEl.innerHTML = '';
+      order.forEach(land => {
+        const header = document.createElement('div');
+        header.className = 'group-header';
+        header.textContent = `${land} (${groups.get(land).length})`;
+        userListEl.appendChild(header);
+
+        groups.get(land).forEach(user => {
+          const item = document.createElement('div');
+          item.className = 'user-item';
+          item.innerHTML =
+            `<span class="user-name">${escapeHtml(user.name)}</span>` +
+            `<span class="user-plz">${escapeHtml(user.plz)}</span>`;
+          item.addEventListener('click', () => {
+            const marker = markerMap[user.discord_id];
+            if (marker) cluster.zoomToShowLayer(marker, () => marker.openPopup());
+          });
+          userListEl.appendChild(item);
         });
-        userListEl.appendChild(item);
       });
     }
 
