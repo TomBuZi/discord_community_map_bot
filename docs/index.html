@@ -370,7 +370,7 @@
       map.eachLayer(layer => {
         if (!layer.getAllChildMarkers) return;
         layer.unbindTooltip();
-        const names = layer.getAllChildMarkers().map(m => m.options.title).join('<br>');
+        const names = layer.getAllChildMarkers().map(m => m.options.title).sort((a, b) => a.localeCompare(b, 'de')).join('<br>');
         layer.bindTooltip(names, { permanent: true, className: 'marker-label', direction: 'top' }).openTooltip();
       });
     }
@@ -385,9 +385,11 @@
 
     document.getElementById('toggle-labels').addEventListener('change', function() {
       if (this.checked) {
-        Object.values(markerMap).forEach(m =>
-          m.bindTooltip(m.options.title, { permanent: true, className: 'marker-label', direction: 'right' }).openTooltip()
-        );
+        Object.values(markerMap).forEach(m => {
+          const isAdmin = adminMarkers.includes(m);
+          const content = isAdmin ? `<b>${m.options.title}</b>` : m.options.title;
+          m.bindTooltip(content, { permanent: true, className: 'marker-label', direction: 'top' }).openTooltip();
+        });
         applyClusterTooltips();
       } else {
         Object.values(markerMap).forEach(m => m.unbindTooltip());
