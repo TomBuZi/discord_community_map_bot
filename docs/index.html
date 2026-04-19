@@ -366,8 +366,31 @@
       adminMarkers.forEach(m => adminVisible ? map.addLayer(m) : map.removeLayer(m));
     });
 
+    function applyClusterTooltips() {
+      map.eachLayer(layer => {
+        if (!layer.getAllChildMarkers) return;
+        layer.unbindTooltip();
+        const names = layer.getAllChildMarkers().map(m => m.options.title).join('<br>');
+        layer.bindTooltip(names, { permanent: true, className: 'marker-label', direction: 'top' }).openTooltip();
+      });
+    }
+
+    function removeClusterTooltips() {
+      map.eachLayer(layer => {
+        if (!layer.getAllChildMarkers) return;
+        layer.closeTooltip();
+        layer.unbindTooltip();
+      });
+    }
+
+    cluster.on('animationend', () => {
+      if (document.getElementById('toggle-labels').checked) applyClusterTooltips();
+    });
+
     document.getElementById('toggle-labels').addEventListener('change', function() {
       Object.values(markerMap).forEach(m => this.checked ? m.openTooltip() : m.closeTooltip());
+      if (this.checked) applyClusterTooltips();
+      else removeClusterTooltips();
     });
 
     document.getElementById('toggle-cluster').addEventListener('change', function() {
