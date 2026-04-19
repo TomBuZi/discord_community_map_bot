@@ -388,7 +388,7 @@
         Object.values(markerMap).forEach(m => {
           const isAdmin = adminMarkers.includes(m);
           const content = isAdmin ? `<b>${m.options.title}</b>` : m.options.title;
-          const opts = { permanent: true, className: 'marker-label', direction: 'top' };
+          const opts = { permanent: true, className: 'marker-label', direction: 'top', offset: [0, 32] };
           if (isAdmin) opts.pane = 'adminTooltipPane';
           m.bindTooltip(content, opts).openTooltip();
         });
