@@ -208,11 +208,38 @@
       margin-left: 6px;
     }
     .user-dot.admin { background: #e03131; }
+
+    #map-controls {
+      position: absolute;
+      bottom: 36px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-size: 13px;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #map-controls label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <div id="map-title">Deutschsprachige Marvel Champions Karte</div>
+  <div id="map-controls">
+    <label><input type="checkbox" id="toggle-admin" checked> Admin-Marker</label>
+    <label><input type="checkbox" id="toggle-cluster" checked> Clustering</label>
+  </div>
   <div id="join-hint">
     Auch auf der Karte? Tritt unserem <a href="https://discord.gg/VDQT8xdqdw" target="_blank" rel="noopener">Discord-Server</a> bei und nutze <strong>/eintragen</strong>.
   </div>
@@ -280,7 +307,7 @@
               dropdown.style.display = 'none';
               const key = user.type === 'admin' ? `admin_${user.name}` : user.discord_id;
               const marker = markerMap[key];
-              if (marker) cluster.zoomToShowLayer(marker, () => marker.openPopup());
+              if (marker) navigateToMarker(marker, user.type === 'admin');
             });
             dropdown.appendChild(item);
           });
@@ -305,9 +332,38 @@
     const sortNameBtn  = document.getElementById('sort-name');
     const sortPlzBtn   = document.getElementById('sort-plz');
 
-    let allUsers    = [];
-    let markerMap   = {};
-    let currentSort = 'name';
+    let allUsers      = [];
+    let markerMap     = {};
+    let adminMarkers  = [];
+    let userMarkers   = [];
+    let currentSort   = 'name';
+    let clusterEnabled = true;
+    let adminVisible   = true;
+
+    function navigateToMarker(marker, isAdmin) {
+      if (isAdmin || !clusterEnabled) {
+        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 13));
+        setTimeout(() => marker.openPopup(), 500);
+      } else {
+        cluster.zoomToShowLayer(marker, () => marker.openPopup());
+      }
+    }
+
+    document.getElementById('toggle-admin').addEventListener('change', function() {
+      adminVisible = this.checked;
+      adminMarkers.forEach(m => adminVisible ? map.addLayer(m) : map.removeLayer(m));
+    });
+
+    document.getElementById('toggle-cluster').addEventListener('change', function() {
+      clusterEnabled = this.checked;
+      if (clusterEnabled) {
+        userMarkers.forEach(m => map.removeLayer(m));
+        map.addLayer(cluster);
+      } else {
+        map.removeLayer(cluster);
+        userMarkers.forEach(m => map.addLayer(m));
+      }
+    });
 
     const redIcon = L.divIcon({
       html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 41" width="25" height="41">
@@ -393,7 +449,7 @@
             `</span>`;
           item.addEventListener('click', () => {
             const marker = markerMap[key];
-            if (marker) cluster.zoomToShowLayer(marker, () => marker.openPopup());
+            if (marker) navigateToMarker(marker, isAdmin);
           });
           userListEl.appendChild(item);
         });
@@ -432,8 +488,13 @@
             marker = L.marker([user.lat, user.lng], { title: user.name });
           }
           marker.bindPopup(popup);
-          if (user.type === 'admin') map.addLayer(marker);
-          else cluster.addLayer(marker);
+          if (user.type === 'admin') {
+            map.addLayer(marker);
+            adminMarkers.push(marker);
+          } else {
+            cluster.addLayer(marker);
+            userMarkers.push(marker);
+          }
           const key = user.type === 'admin' ? `admin_${user.name}` : user.discord_id;
           markerMap[key] = marker;
         });
