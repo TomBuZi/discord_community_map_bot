@@ -432,7 +432,8 @@
             marker = L.marker([user.lat, user.lng], { title: user.name });
           }
           marker.bindPopup(popup);
-          cluster.addLayer(marker);
+          if (user.type === 'admin') map.addLayer(marker);
+          else cluster.addLayer(marker);
           const key = user.type === 'admin' ? `admin_${user.name}` : user.discord_id;
           markerMap[key] = marker;
         });
