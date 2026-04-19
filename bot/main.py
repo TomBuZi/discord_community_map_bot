@@ -192,6 +192,8 @@ async def admin_loeschen(interaction: discord.Interaction, nutzer: discord.Membe
     hausnummer="Hausnummer (optional)",
     land="Land (Standard: Deutschland)",
     url="Webadresse (optional)",
+    url_text="Linktext für die Webadresse, z.B. 'Zur Website' (optional)",
+    beschreibung="Kurzbeschreibung im Popup (optional)",
 )
 @app_commands.checks.has_permissions(administrator=True)
 async def admin_eintragen(
@@ -202,6 +204,8 @@ async def admin_eintragen(
     hausnummer: str = None,
     land: str = "Deutschland",
     url: str = None,
+    url_text: str = None,
+    beschreibung: str = None,
 ):
     await interaction.response.defer(ephemeral=True)
 
@@ -215,7 +219,7 @@ async def admin_eintragen(
 
     lat, lng = coords
     try:
-        storage.add_admin_entry(data_repo, name, plz, land, lat, lng, strasse, hausnummer, url)
+        storage.add_admin_entry(data_repo, name, plz, land, lat, lng, strasse, hausnummer, url, url_text, beschreibung)
     except GithubException:
         await interaction.followup.send(
             "Es gab einen Fehler beim Speichern. Bitte versuch es in einem Moment erneut.",

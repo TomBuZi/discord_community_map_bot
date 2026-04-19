@@ -44,7 +44,8 @@ def add_user(repo, discord_id: str, name: str, plz: str, land: str, lat: float, 
 
 
 def add_admin_entry(repo, name: str, plz: str, land: str, lat: float, lng: float,
-                    strasse: str = None, hausnummer: str = None, url: str = None) -> None:
+                    strasse: str = None, hausnummer: str = None, url: str = None,
+                    url_text: str = None, beschreibung: str = None) -> None:
     """Fügt einen Admin-Eintrag hinzu. Überschreibt einen bestehenden Eintrag mit gleichem Namen."""
     users = get_users(repo)
     users = [u for u in users if not (u.get("type") == "admin" and u["name"].lower() == name.lower())]
@@ -55,6 +56,10 @@ def add_admin_entry(repo, name: str, plz: str, land: str, lat: float, lng: float
         entry["hausnummer"] = hausnummer
     if url:
         entry["url"] = url
+    if url_text:
+        entry["url_text"] = url_text
+    if beschreibung:
+        entry["beschreibung"] = beschreibung
     users.append(entry)
     save_users(repo, users)
 

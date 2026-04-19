@@ -378,10 +378,11 @@
             if (user.strasse) adresse = `${user.strasse}${user.hausnummer ? ' ' + user.hausnummer : ''}, ${adresse}`;
             if (user.land && user.land !== 'Deutschland') adresse += `, ${user.land}`;
             const link = user.url
-              ? `<a href="${escapeHtml(user.url)}" target="_blank" rel="noopener">${escapeHtml(user.url)}</a>`
+              ? `<a href="${escapeHtml(user.url)}" target="_blank" rel="noopener">${escapeHtml(user.url_text || user.url)}</a>`
               : '';
             popup = `<b>${escapeHtml(user.name)}</b>` +
               (adresse ? `<br>${escapeHtml(adresse)}` : '') +
+              (user.beschreibung ? `<br><span style="color:#555;font-size:0.9em">${escapeHtml(user.beschreibung)}</span>` : '') +
               (link ? `<br>${link}` : '');
             marker = L.marker([user.lat, user.lng], { title: user.name, icon: redIcon });
           } else {
