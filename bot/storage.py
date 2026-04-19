@@ -31,7 +31,7 @@ def add_user(repo, discord_id: str, name: str, plz: str, land: str, lat: float, 
     Jeder Discord-Nutzer kann nur einen Eintrag haben.
     """
     users = get_users(repo)
-    users = [u for u in users if u["discord_id"] != discord_id]
+    users = [u for u in users if u.get("discord_id") != discord_id]
     users.append({
         "discord_id": discord_id,
         "name": name,
@@ -80,7 +80,7 @@ def remove_user(repo, discord_id: str) -> bool:
     Gibt True zurück wenn ein Eintrag gelöscht wurde, sonst False.
     """
     users = get_users(repo)
-    filtered = [u for u in users if u["discord_id"] != discord_id]
+    filtered = [u for u in users if u.get("discord_id") != discord_id]
     if len(filtered) == len(users):
         return False
     save_users(repo, filtered)
