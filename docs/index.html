@@ -479,7 +479,7 @@
               (adresse ? `<br>${escapeHtml(adresse)}` : '') +
               (user.beschreibung ? `<br><span style="color:#555;font-size:0.9em">${escapeHtml(user.beschreibung)}</span>` : '') +
               (link ? `<br>${link}` : '');
-            marker = L.marker([user.lat, user.lng], { title: user.name, icon: redIcon });
+            marker = L.marker([user.lat, user.lng], { title: user.name, icon: redIcon, zIndexOffset: 1000 });
           } else {
             popup =
               `<b>${escapeHtml(user.name)}</b><br>` +
