@@ -243,8 +243,18 @@ async def admin_eintragen_error(interaction: discord.Interaction, error: app_com
         )
 
 
-@tree.command(name="admin_eintrag_loeschen", description="[Admin] Entfernt einen Admin-Karteneintrag per Name.")
-@app_commands.describe(name="Name des Eintrags (exakt wie eingetragen)")
+async def admin_eintraege_autocomplete(interaction: discord.Interaction, current: str):
+    users = storage.get_users(data_repo)
+    return [
+        app_commands.Choice(name=u["name"], value=u["name"])
+        for u in users
+        if u.get("type") == "admin" and current.lower() in u["name"].lower()
+    ][:25]
+
+
+@tree.command(name="admin_eintrag_loeschen", description="[Admin] Entfernt einen Admin-Karteneintrag.")
+@app_commands.describe(name="Name des Eintrags")
+@app_commands.autocomplete(name=admin_eintraege_autocomplete)
 @app_commands.checks.has_permissions(administrator=True)
 async def admin_eintrag_loeschen(interaction: discord.Interaction, name: str):
     await interaction.response.defer(ephemeral=True)
