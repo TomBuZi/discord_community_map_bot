@@ -7,6 +7,7 @@ Ein Discord-Bot, mit dem sich Server-Mitglieder mit Name und Postleitzahl auf ei
 | Command | Sichtbar für | Funktion |
 |---|---|---|
 | `/eintragen name:<name> plz:<plz>` | Nur dich | Eintragen oder Eintrag aktualisieren |
+| `/find km:<zahl>` | Nur dich | Mitglieder im Umkreis suchen, sortiert nach Distanz |
 | `/loeschen` | Nur dich | Eigenen Eintrag entfernen |
 | `/karte` | Nur dich | Link zur Karte anzeigen |
 | `/admin_loeschen nutzer:<@nutzer>` | Nur dich (nur Admins) | Eintrag eines anderen Nutzers entfernen |
@@ -138,7 +139,7 @@ Falls dort ein Fehler steht, prüfe ob alle vier Variablen aus Schritt 5d korrek
 
 ## Hinweise
 
-- **Slash-Commands:** Nach dem ersten Start kann es bis zu **1 Stunde** dauern, bis `/eintragen`, `/loeschen` und `/karte` in Discord erscheinen. Das ist normal — Discord verteilt neue Commands global.
+- **Slash-Commands:** Nach dem ersten Start kann es bis zu **1 Stunde** dauern, bis `/eintragen`, `/find`, `/loeschen` und `/karte` in Discord erscheinen. Das ist normal — Discord verteilt neue Commands global.
 - **Karten-Aktualisierung:** Nach einem neuen Eintrag kann die Karte bis zu **5 Minuten** veraltet sein (GitHub CDN-Cache). Ein Ctrl+Shift+R im Browser erzwingt die neueste Version.
 - **PLZ-Format:** Nur deutsche 5-stellige Postleitzahlen werden unterstützt.
 - **Umzug:** Wer `/eintragen` erneut aufruft, überschreibt seinen alten Eintrag automatisch — kein Duplikat entsteht.
