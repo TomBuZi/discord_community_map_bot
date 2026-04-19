@@ -38,10 +38,11 @@ Bist du einverstanden?"""
 
 
 class EintragungView(discord.ui.View):
-    def __init__(self, name: str, plz: str, discord_id: str):
+    def __init__(self, name: str, plz: str, land: str, discord_id: str):
         super().__init__(timeout=60)
         self.name = name
         self.plz = plz
+        self.land = land
         self.discord_id = discord_id
         self.message = None
 
@@ -51,7 +52,7 @@ class EintragungView(discord.ui.View):
         for item in self.children:
             item.disabled = True
 
-        coords = geocode.get_coords(self.plz)
+        coords = geocode.get_coords(self.plz, self.land)
         if coords is None:
             await interaction.edit_original_response(
                 content=f"Die Postleitzahl **{self.plz}** wurde leider nicht gefunden. Bitte versuch es erneut.",
@@ -107,18 +108,21 @@ async def on_ready():
 
 @tree.command(name="eintragen", description="Trage dich mit Name und Postleitzahl in die Karte ein.")
 @app_commands.describe(
-    name="Dein Name (wird auf der Karte angezeigt)",
-    plz="Deine Postleitzahl (5 Ziffern)",
+    plz="Deine Postleitzahl",
+    name="Dein Anzeigename auf der Karte (Standard: dein Discord-Username)",
+    land="Dein Land (Standard: Deutschland)",
 )
-async def eintragen(interaction: discord.Interaction, name: str, plz: str):
-    if not (plz.isdigit() and len(plz) == 5):
+async def eintragen(interaction: discord.Interaction, plz: str, name: str = None, land: str = "Deutschland"):
+    anzeigename = name if name else interaction.user.display_name
+
+    if not plz.isdigit():
         await interaction.response.send_message(
-            "Die Postleitzahl muss genau 5 Ziffern haben (z.B. `10115`).",
+            "Die Postleitzahl darf nur Ziffern enthalten.",
             ephemeral=True,
         )
         return
 
-    view = EintragungView(name, plz, str(interaction.user.id))
+    view = EintragungView(anzeigename, plz, land, str(interaction.user.id))
     await interaction.response.send_message(DATENSCHUTZ_HINWEIS, view=view, ephemeral=True)
     view.message = await interaction.original_response()
 

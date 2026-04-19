@@ -4,13 +4,13 @@ NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 HEADERS = {"User-Agent": "discord-map-bot/1.0"}
 
 
-def get_coords(plz: str) -> tuple[float, float] | None:
+def get_coords(plz: str, land: str = "Deutschland") -> tuple[float, float] | None:
     """
-    Gibt (lat, lng) für eine deutsche Postleitzahl zurück.
+    Gibt (lat, lng) für eine Postleitzahl zurück.
     Gibt None zurück wenn die PLZ nicht gefunden wird oder ein Fehler auftritt.
     """
     params = {
-        "q": f"{plz},Germany",
+        "q": f"{plz},{land}",
         "format": "json",
         "limit": 1,
     }
