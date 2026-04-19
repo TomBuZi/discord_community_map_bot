@@ -139,6 +139,19 @@ Falls dort ein Fehler steht, prüfe ob alle vier Variablen aus Schritt 5d korrek
 
 ---
 
+## Bot auf einen zweiten Server einladen
+
+Da Bot, Daten und Karte geteilt sind, müssen sich beide Server nur denselben Bot teilen — kein zweites Hosting nötig.
+
+1. Geh auf [discord.com/developers/applications](https://discord.com/developers/applications) → deine App → **OAuth2** → **URL Generator**
+2. Scopes: `bot` + `applications.commands` — Bot Permissions: `Send Messages`
+3. Kopiere die generierte URL und schick sie dem Admin des zweiten Servers
+4. Nach der Einladung erscheinen alle Slash-Commands automatisch (bis zu 1 Stunde)
+
+Nutzer beider Server landen auf derselben Karte. Admin-Befehle funktionieren jeweils für die Admins des eigenen Servers.
+
+---
+
 ## Hinweise
 
 - **Slash-Commands:** Nach dem ersten Start kann es bis zu **1 Stunde** dauern, bis `/eintragen`, `/find`, `/loeschen` und `/karte` in Discord erscheinen. Das ist normal — Discord verteilt neue Commands global.
