@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Community Karte</title>
+  <title>Marvel Champions Community Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
@@ -166,6 +166,23 @@
     .search-dropdown-item:last-child { border-bottom: none; }
     .search-dropdown-item:hover { background: #f0f5ff; }
 
+    #map-title {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: white;
+      padding: 7px 16px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-size: 15px;
+      font-weight: 700;
+      color: #222;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
     #join-hint {
       position: absolute;
       bottom: 28px;
@@ -195,6 +212,7 @@
 </head>
 <body>
   <div id="map"></div>
+  <div id="map-title">Marvel Champions Community Map</div>
   <div id="join-hint">
     Auch auf der Karte? Tritt unserem <a href="https://discord.gg/VDQT8xdqdw" target="_blank" rel="noopener">Discord-Server</a> bei und nutze <strong>/eintragen</strong>.
   </div>
