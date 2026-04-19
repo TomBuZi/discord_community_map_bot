@@ -330,7 +330,7 @@ async def find(interaction: discord.Interaction, km: int):
     await interaction.response.defer(ephemeral=True)
 
     users = storage.get_users(data_repo)
-    own = next((u for u in users if u["discord_id"] == str(interaction.user.id)), None)
+    own = next((u for u in users if u.get("discord_id") == str(interaction.user.id)), None)
 
     if own is None:
         await interaction.followup.send(
@@ -341,7 +341,7 @@ async def find(interaction: discord.Interaction, km: int):
 
     nearby = []
     for u in users:
-        if u["discord_id"] == str(interaction.user.id):
+        if u.get("discord_id") == str(interaction.user.id):
             continue
         dist = haversine_km(own["lat"], own["lng"], u["lat"], u["lng"])
         if dist <= km:
